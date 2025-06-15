@@ -1,0 +1,374 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salifu Online Educational Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* High-contrast focus styles for accessibility */
+        :focus {
+            outline: 3px solid #1e40af;
+            outline-offset: 2px;
+        }
+        /* Hide elements visually but keep them accessible to screen readers */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Login Page -->
+    <div id="login-page" class="min-h-screen flex items-center justify-center bg-blue-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Welcome to the Online Library</h1>
+            <div class="space-y-4">
+                <div>
+                    <label for="name" class="block text-gray-700 font-medium">Name</label>
+                    <input type="text" id="name" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-600" aria-required="true" required>
+                </div>
+                <div>
+                    <label for="education-level" class="block text-gray-700 font-medium">Level of Education</label>
+                    <select id="education-level" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-600" aria-required="true" required>
+                        <option value="">Select Level</option>
+                        <option value="primary">Primary</option>
+                        <option value="jhs">Junior High School</option>
+                        <option value="shs">Senior High School</option>
+                        <option value="nursing">Nursing</option>
+                    </select>
+                </div>
+                <button id="login-btn" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-600" aria-label="Enter Library">Enter Library</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Library Page (Hidden Initially) -->
+    <div id="library-page" class="hidden">
+        <!-- Navigation Bar -->
+        <nav class="bg-blue-600 text-white p-4 sticky top-0 shadow-md" role="navigation">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Online Library</h1>
+                <ul class="flex space-x-6" role="menubar">
+                    <li><a href="#nursing" class="hover:underline" role="menuitem">Nursing Books</a></li>
+                    <li><a href="#shs" class="hover:underline" role="menuitem">SHS Books</a></li>
+                    <li><a href="#jhs" class="hover:underline" role="menuitem">JHS Books</a></li>
+                    <li><a href="#primary" class="hover:underline" role="menuitem">Primary Books</a></li>
+                    <li><a href="#chatbot" class="hover:underline" role="menuitem">Ask AI</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container mx-auto p-6">
+            <!-- Welcome Section -->
+            <section class="text-center mb-12" aria-labelledby="welcome-heading">
+                <h2 id="welcome-heading" class="text-3xl font-semibold text-gray-800">Welcome, <span id="user-name">User</span>!</h2>
+                <p class="text-gray-600 mt-2">Explore educational books and test your knowledge with quizzes.</p>
+            </section>
+
+            <!-- Nursing Books Section -->
+            <section id="nursing" class="mb-12" aria-labelledby="nursing-heading">
+                <h3 id="nursing-heading" class="text-2xl font-bold text-gray-800 mb-4">Nursing Books</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">Fundamentals of Nursing</h4>
+                        <p class="text-gray-600">Author: Patricia A. Potter</p>
+                        <p class="text-gray-600">A comprehensive guide to nursing principles.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Fundamentals of Nursing">Read Now</a>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">Medical-Surgical Nursing</h4>
+                        <p class="text-gray-600">Author: Donna D. Ignatavicius</p>
+                        <p class="text-gray-600">In-depth medical-surgical nursing care.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Medical-Surgical Nursing">Read Now</a>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">Pharmacology for Nurses</h4>
+                        <p class="text-gray-600">Author: Michael P. Adams</p>
+                        <p class="text-gray-600">Essential pharmacology for nursing students.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Pharmacology for Nurses">Read Now</a>
+                    </div>
+                </div>
+                <!-- Nursing Quiz -->
+                <div class="mt-6 bg-white p-6 rounded-lg shadow-md" aria-labelledby="nursing-quiz-heading">
+                    <h4 id="nursing-quiz-heading" class="text-xl font-semibold mb-4">Nursing Quiz</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="font-medium">1. What is the primary focus of nursing care?</p>
+                            <label><input type="radio" name="nursing-q1" value="a"> a) Patient recovery and comfort</label><br>
+                            <label><input type="radio" name="nursing-q1" value="b"> b) Administrative tasks</label><br>
+                            <label><input type="radio" name="nursing-q1" value="c"> c) Equipment maintenance</label>
+                            <p class="text-green-600 hidden" id="nursing-q1-feedback">Correct! The answer is a) Patient recovery and comfort.</p>
+                            <p class="text-red-600 hidden" id="nursing-q1-error">Incorrect. The correct answer is a) Patient recovery and comfort.</p>
+                        </div>
+                        <button class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700" onclick="checkAnswer('nursing-q1', 'a', 'nursing-q1-feedback', 'nursing-q1-error')">Submit Answer</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SHS Books Section -->
+            <section id="shs" class="mb-12" aria-labelledby="shs-heading">
+                <h3 id="shs-heading" class="text-2xl font-bold text-gray-800 mb-4">Senior High School Books</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">Calculus for SHS</h4>
+                        <p class="text-gray-600">Author: James Stewart</p>
+                        <p class="text-gray-600">Detailed calculus concepts for SHS.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Calculus for SHS">Read Now</a>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">Physics for SHS</h4>
+                        <p class="text-gray-600">Author: Paul A. Tipler</p>
+                        <p class="text-gray-600">Core physics principles for SHS.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Physics for SHS">Read Now</a>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">English Literature</h4>
+                        <p class="text-gray-600">Author: Various</p>
+                        <p class="text-gray-600">Classic and modern literature for SHS.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read English Literature">Read Now</a>
+                    </div>
+                </div>
+                <!-- SHS Quiz -->
+                <div class="mt-6 bg-white p-6 rounded-lg shadow-md" aria-labelledby="shs-quiz-heading">
+                    <h4 id="shs-quiz-heading" class="text-xl font-semibold mb-4">SHS Quiz</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="font-medium">1. What is the derivative of x²?</p>
+                            <label><input type="radio" name="shs-q1" value="a"> a) 2x</label><br>
+                            <label><input type="radio" name="shs-q1" value="b"> b) x²</label><br>
+                            <label><input type="radio" name="shs-q1" value="c"> c) 2</label>
+                            <p class="text-green-600 hidden" id="shs-q1-feedback">Correct! The answer is a) 2x.</p>
+                            <p class="text-red-600 hidden" id="shs-q1-error">Incorrect. The correct answer is a) 2x.</p>
+                        </div>
+                        <button class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700" onclick="checkAnswer('shs-q1', 'a', 'shs-q1-feedback', 'shs-q1-error')">Submit Answer</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- JHS Books Section -->
+            <section id="jhs" class="mb-12" aria-labelledby="jhs-heading">
+                <h3 id="jhs-heading" class="text-2xl font-bold text-gray-800 mb-4">Junior High School Books</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">Mathematics for JHS</h4>
+                        <p class="text-gray-600">Author: John A. Carter</p>
+                        <p class="text-gray-600">Foundational math for JHS.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Mathematics for JHS">Read Now</a>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">Science Explorer</h4>
+                        <p class="text-gray-600">Author: Michael J. Padilla</p>
+                        <p class="text-gray-600">General science for JHS students.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Science Explorer">Read Now</a>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">History for JHS</h4>
+                        <p class="text-gray-600">Author: Jackson J. Spielvogel</p>
+                        <p class="text-gray-600">World history for JHS learners.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read History for JHS">Read Now</a>
+                    </div>
+                </div>
+                <!-- JHS Quiz -->
+                <div class="mt-6 bg-white p-6 rounded-lg shadow-md" aria-labelledby="jhs-quiz-heading">
+                    <h4 id="jhs-quiz-heading" class="text-xl font-semibold mb-4">JHS Quiz</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="font-medium">1. What is the chemical symbol for water?</p>
+                            <label><input type="radio" name="jhs-q1" value="a"> a) H₂O</label><br>
+                            <label><input type="radio" name="jhs-q1" value="b"> b) CO₂</label><br>
+                            <label><input type="radio" name="jhs-q1" value="c"> c) O₂</label>
+                            <p class="text-green-600 hidden" id="jhs-q1-feedback">Correct! The answer is a) H₂O.</p>
+                            <p class="text-red-600 hidden" id="jhs-q1-error">Incorrect. The correct answer is a) H₂O.</p>
+                        </div>
+                        <button class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700" onclick="checkAnswer('jhs-q1', 'a', 'jhs-q1-feedback', 'jhs-q1-error')">Submit Answer</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Primary Books Section -->
+            <section id="primary" class="mb-12" aria-labelledby="primary-heading">
+                <h3 id="primary-heading" class="text-2xl font-bold text-gray-800 mb-4">Primary Books</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">Basic English for Kids</h4>
+                        <p class="text-gray-600">Author: Jane Smith</p>
+                        <p class="text-gray-600">Engaging English lessons for primary students.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Basic English for Kids">Read Now</a>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">Math Made Easy</h4>
+                        <p class="text-gray-600">Author: Mary Johnson</p>
+                        <p class="text-gray-600">Simple math for young learners.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Math Made Easy">Read Now</a>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold">Science for Young Minds</h4>
+                        <p class="text-gray-600">Author: David Brown</p>
+                        <p class="text-gray-600">Science for primary school children.</p>
+                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Science for Young Minds">Read Now</a>
+                    </div>
+                </div>
+                <!-- Primary Quiz -->
+                <div class="mt-6 bg-white p-6 rounded-lg shadow-md" aria-labelledby="primary-quiz-heading">
+                    <h4 id="primary-quiz-heading" class="text-xl font-semibold mb-4">Primary Quiz</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="font-medium">1. What is 2 + 3?</p>
+                            <label><input type="radio" name="primary-q1" value="a"> a) 5</label><br>
+                            <label><input type="radio" name="primary-q1" value="b"> b) 6</label><br>
+                            <label><input type="radio" name="primary-q1" value="c"> c) 4</label>
+                            <p class="text-green-600 hidden" id="primary-q1-feedback">Correct! The answer is a) 5.</p>
+                            <p class="text-red-600 hidden" id="primary-q1-error">Incorrect. The correct answer is a) 5.</p>
+                        </div>
+                        <button class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700" onclick="checkAnswer('primary-q1', 'a', 'primary-q1-feedback', 'primary-q1-error')">Submit Answer</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Chatbot Section -->
+            <section id="chatbot" class="mb-12" aria-labelledby="chatbot-heading">
+                <h3 id="chatbot-heading" class="text-2xl font-bold text-gray-800 mb-4">Ask Our AI Assistant</h3>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div id="chat-output" class="h-64 overflow-y-auto border p-4 mb-4" aria-live="polite"></div>
+                    <div class="flex space-x-2">
+                        <input type="text" id="chat-input" class="flex-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-600" placeholder="Ask a question about any book or subject..." aria-label="Ask a question">
+                        <button id="chat-submit" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700" aria-label="Submit question">Send</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-blue-600 text-white p-4 text-center" role="contentinfo">
+            <p>© 2025 Online Library. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Login Functionality
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const name = document.getElementById('name').value.trim();
+            const educationLevel = document.getElementById('education-level').value;
+            if (name && educationLevel) {
+                document.getElementById('user-name').textContent = name;
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('library-page').classList.remove('hidden');
+            } else {
+                alert('Please enter your name and select your education level.');
+            }
+        });
+
+        // Quiz Answer Checking
+        function checkAnswer(questionName, correctAnswer, feedbackId, errorId) {
+            const selected = document.querySelector(`input[name="${questionName}"]:checked`);
+            const feedback = document.getElementById(feedbackId);
+            const error = document.getElementById(errorId);
+            if (selected) {
+                feedback.classList.add('hidden');
+                error.classList.add('hidden');
+                if (selected.value === correctAnswer) {
+                    feedback.classList.remove('hidden');
+                } else {
+                    error.classList.remove('hidden');
+                }
+            } else {
+                alert('Please select an answer.');
+            }
+        }
+
+        // AI Chatbot Simulation
+        const chatInput = document.getElementById('chat-input');
+        const chatOutput = document.getElementById('chat-output');
+        const chatSubmit = document.getElementById('chat-submit');
+
+        const responses = {
+            'nursing': 'Nursing involves patient care, administering medications, and collaborating with healthcare teams. Want to know more about a specific nursing topic?',
+            'calculus': 'Calculus is about change and motion, focusing on derivatives and integrals. Ask me about a specific calculus concept!',
+            'physics': 'Physics covers motion, energy, and forces. Want help with a physics question?',
+            'english': 'English literature includes novels, poems, and plays. Ask about a specific book or author!',
+            'math': 'Math includes topics like algebra and geometry. What math concept do you need help with?',
+            'science': 'Science explores the natural world, including biology, chemistry, and physics. Ask a specific science question!',
+            'history': 'History covers past events and civilizations. Want to know about a specific historical period?',
+            'default': 'I can help with nursing, SHS, JHS, or primary subjects. Please ask a specific question or mention a topic!'
+        };
+
+        chatSubmit.addEventListener('click', () => {
+            const question = chatInput.value.trim().toLowerCase();
+            if (question) {
+                const userMessage = document.createElement('p');
+                userMessage.innerHTML = `<strong>You:</strong> ${question}`;
+                chatOutput.appendChild(userMessage);
+
+                let response = responses['default'];
+                for (const key in responses) {
+                    if (question.includes(key)) {
+                        response = responses[key];
+                        break;
+                    }
+                }
+
+                const aiMessage = document.createElement('p');
+                aiMessage.innerHTML = `<strong>AI Assistant:</strong> ${response}`;
+                chatOutput.appendChild(aiMessage);
+
+                chatOutput.scrollTop = chatOutput.scrollHeight;
+                chatInput.value = '';
+            }
+        });
+
+        // Allow Enter key to submit chat
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                chatSubmit.click();
+            }
+        });
+    </script>
+</body>
+                          </html>
