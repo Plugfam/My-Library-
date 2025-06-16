@@ -40,335 +40,497 @@
         </script><!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salifu Online Educational Library</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* High-contrast focus styles for accessibility */
-        :focus {
-            outline: 3px solid #1e40af;
-            outline-offset: 2px;
-        }
-        /* Hide elements visually but keep them accessible to screen readers */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Library</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    body {
+      background: #f5f5f5;
+      color: #333;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark {
+      background: #121212;
+      color: #e0e0e0;
+    }
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: #2c2f33;
+      color: #e0e0e0;
+      padding: 20px;
+      position: fixed;
+      height: 100%;
+      transition: transform 0.3s ease-in-out;
+      z-index: 1000;
+    }
+    .sidebar.hidden {
+      transform: translateX(-100%);
+    }
+    .sidebar ul {
+      list-style: none;
+    }
+    .sidebar li {
+      margin: 10px 0;
+    }
+    .sidebar a {
+      color: #e0e0e0;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background: #1e90ff;
+    }
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    header.dark {
+      background: #1e1e1e;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .search-bar {
+      flex: 1;
+      max-width: 400px;
+      margin: 0 20px;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 10px 15px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      color: #333;
+    }
+    .search-bar input.dark {
+      border: 1px solid #444;
+      background: #2c2f33;
+      color: #e0e0e0;
+    }
+    .user-controls button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      margin-left: 15px;
+    }
+    .hamburger {
+      display: none;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    /* Main Content */
+    main {
+      flex: 1;
+      padding: 30px;
+      margin-left: 250px;
+    }
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .filters select {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: #fff;
+      color: #333;
+    }
+    .filters select.dark {
+      background: #2c2f33;
+      border: 1px solid #444;
+      color: #e0e0e0;
+    }
+    .book-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+    }
+    .book-card {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease-in-out;
+      position: relative;
+    }
+    .book-card.dark {
+      background: #1e1e1e;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    .book-card:hover {
+      transform: scale(1.05);
+    }
+    .book-card img {
+      width: 100%;
+      height: 270px;
+      object-fit: cover;
+      display: block;
+    }
+    .book-card .info {
+      padding: 10px;
+    }
+    .book-card h3 {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .book-card p {
+      font-size: 14px;
+      color: #666;
+      font-style: italic;
+    }
+    .book-card p.dark {
+      color: #aaa;
+    }
+    .book-card .rating {
+      font-size: 14px;
+      color: #f5c518;
+      margin-top: 5px;
+    }
+    .book-card .favorite {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #ccc;
+    }
+    .book-card .favorite.active {
+      color: #ff4d4f;
+    }
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1001;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+    }
+    .modal-content.dark {
+      background: #1e1e1e;
+    }
+    .modal-content img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .modal-content h2 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .modal-content p {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .modal-content .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #333;
+    }
+    .modal-content .close.dark {
+      color: #e0e0e0;
+    }
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: #fff;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+    footer.dark {
+      background: #1e1e1e;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.5);
+    }
+    footer a {
+      color: #1e90ff;
+      text-decoration: none;
+    }
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      main {
+        margin-left: 0;
+      }
+      .hamburger {
+        display: block;
+      }
+      .book-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+    }
+    @media (max-width: 480px) {
+      .book-grid {
+        grid-template-columns: 1fr;
+      }
+      .search-bar {
+        margin: 0 10px;
+      }
+    }
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e90ff;
+      border-radius: 4px;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 font-sans">
-    <!-- Login Page -->
-    <div id="login-page" class="min-h-screen flex items-center justify-center bg-blue-50">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-            <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Welcome to the Online Library</h1>
-            <div class="space-y-4">
-                <div>
-                    <label for="name" class="block text-gray-700 font-medium">Name</label>
-                    <input type="text" id="name" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-600" aria-required="true" required>
-                </div>
-                <div>
-                    <label for="education-level" class="block text-gray-700 font-medium">Level of Education</label>
-                    <select id="education-level" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-600" aria-required="true" required>
-                        <option value="">Select Level</option>
-                        <option value="primary">Primary</option>
-                        <option value="jhs">Junior High School</option>
-                        <option value="shs">Senior High School</option>
-                        <option value="nursing">Nursing</option>
-                    </select>
-                </div>
-                <button id="login-btn" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-600" aria-label="Enter Library">Enter Library</button>
-            </div>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <ul>
+        <li><a href="#" class="active">Categories</a></li>
+        <li><a href="#">Search</a></li>
+        <li><a href="#">Favorites</a></li>
+        <li><a href="#">My Library</a></li>
+        <li><a href="#">Settings</a></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div style="flex: 1; display: flex; flex-direction: column;">
+      <!-- Header -->
+      <header>
+        <span class="hamburger" id="hamburger">☰</span>
+        <div class="logo">Online Library</div>
+        <div class="search-bar">
+          <input type="text" id="search" placeholder="Search books...">
         </div>
-    </div>
-
-    <!-- Main Library Page (Hidden Initially) -->
-    <div id="library-page" class="hidden">
-        <!-- Navigation Bar -->
-        <nav class="bg-blue-600 text-white p-4 sticky top-0 shadow-md" role="navigation">
-            <div class="container mx-auto flex justify-between items-center">
-                <h1 class="text-2xl font-bold">Online Library</h1>
-                <ul class="flex space-x-6" role="menubar">
-                    <li><a href="#nursing" class="hover:underline" role="menuitem">Nursing Books</a></li>
-                    <li><a href="#shs" class="hover:underline" role="menuitem">SHS Books</a></li>
-                    <li><a href="#jhs" class="hover:underline" role="menuitem">JHS Books</a></li>
-                    <li><a href="#primary" class="hover:underline" role="menuitem">Primary Books</a></li>
-                    <li><a href="#chatbot" class="hover:underline" role="menuitem">Ask AI</a></li>
-                </ul>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <div class="container mx-auto p-6">
-            <!-- Welcome Section -->
-            <section class="text-center mb-12" aria-labelledby="welcome-heading">
-                <h2 id="welcome-heading" class="text-3xl font-semibold text-gray-800">Welcome, <span id="user-name">User</span>!</h2>
-                <p class="text-gray-600 mt-2">Explore educational books and test your knowledge with quizzes.</p>
-            </section>
-
-            <!-- Nursing Books Section -->
-            <section id="nursing" class="mb-12" aria-labelledby="nursing-heading">
-                <h3 id="nursing-heading" class="text-2xl font-bold text-gray-800 mb-4">Nursing Books</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">Fundamentals of Nursing</h4>
-                        <p class="text-gray-600">Author: Patricia A. Potter</p>
-                        <p class="text-gray-600">A comprehensive guide to nursing principles.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Fundamentals of Nursing">Read Now</a>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">Medical-Surgical Nursing</h4>
-                        <p class="text-gray-600">Author: Donna D. Ignatavicius</p>
-                        <p class="text-gray-600">In-depth medical-surgical nursing care.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Medical-Surgical Nursing">Read Now</a>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">Pharmacology for Nurses</h4>
-                        <p class="text-gray-600">Author: Michael P. Adams</p>
-                        <p class="text-gray-600">Essential pharmacology for nursing students.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Pharmacology for Nurses">Read Now</a>
-                    </div>
-                </div>
-                <!-- Nursing Quiz -->
-                <div class="mt-6 bg-white p-6 rounded-lg shadow-md" aria-labelledby="nursing-quiz-heading">
-                    <h4 id="nursing-quiz-heading" class="text-xl font-semibold mb-4">Nursing Quiz</h4>
-                    <div class="space-y-4">
-                        <div>
-                            <p class="font-medium">1. What is the primary focus of nursing care?</p>
-                            <label><input type="radio" name="nursing-q1" value="a"> a) Patient recovery and comfort</label><br>
-                            <label><input type="radio" name="nursing-q1" value="b"> b) Administrative tasks</label><br>
-                            <label><input type="radio" name="nursing-q1" value="c"> c) Equipment maintenance</label>
-                            <p class="text-green-600 hidden" id="nursing-q1-feedback">Correct! The answer is a) Patient recovery and comfort.</p>
-                            <p class="text-red-600 hidden" id="nursing-q1-error">Incorrect. The correct answer is a) Patient recovery and comfort.</p>
-                        </div>
-                        <button class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700" onclick="checkAnswer('nursing-q1', 'a', 'nursing-q1-feedback', 'nursing-q1-error')">Submit Answer</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- SHS Books Section -->
-            <section id="shs" class="mb-12" aria-labelledby="shs-heading">
-                <h3 id="shs-heading" class="text-2xl font-bold text-gray-800 mb-4">Senior High School Books</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">Calculus for SHS</h4>
-                        <p class="text-gray-600">Author: James Stewart</p>
-                        <p class="text-gray-600">Detailed calculus concepts for SHS.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Calculus for SHS">Read Now</a>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">Physics for SHS</h4>
-                        <p class="text-gray-600">Author: Paul A. Tipler</p>
-                        <p class="text-gray-600">Core physics principles for SHS.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Physics for SHS">Read Now</a>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">English Literature</h4>
-                        <p class="text-gray-600">Author: Various</p>
-                        <p class="text-gray-600">Classic and modern literature for SHS.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read English Literature">Read Now</a>
-                    </div>
-                </div>
-                <!-- SHS Quiz -->
-                <div class="mt-6 bg-white p-6 rounded-lg shadow-md" aria-labelledby="shs-quiz-heading">
-                    <h4 id="shs-quiz-heading" class="text-xl font-semibold mb-4">SHS Quiz</h4>
-                    <div class="space-y-4">
-                        <div>
-                            <p class="font-medium">1. What is the derivative of x²?</p>
-                            <label><input type="radio" name="shs-q1" value="a"> a) 2x</label><br>
-                            <label><input type="radio" name="shs-q1" value="b"> b) x²</label><br>
-                            <label><input type="radio" name="shs-q1" value="c"> c) 2</label>
-                            <p class="text-green-600 hidden" id="shs-q1-feedback">Correct! The answer is a) 2x.</p>
-                            <p class="text-red-600 hidden" id="shs-q1-error">Incorrect. The correct answer is a) 2x.</p>
-                        </div>
-                        <button class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700" onclick="checkAnswer('shs-q1', 'a', 'shs-q1-feedback', 'shs-q1-error')">Submit Answer</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- JHS Books Section -->
-            <section id="jhs" class="mb-12" aria-labelledby="jhs-heading">
-                <h3 id="jhs-heading" class="text-2xl font-bold text-gray-800 mb-4">Junior High School Books</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">Mathematics for JHS</h4>
-                        <p class="text-gray-600">Author: John A. Carter</p>
-                        <p class="text-gray-600">Foundational math for JHS.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Mathematics for JHS">Read Now</a>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">Science Explorer</h4>
-                        <p class="text-gray-600">Author: Michael J. Padilla</p>
-                        <p class="text-gray-600">General science for JHS students.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Science Explorer">Read Now</a>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">History for JHS</h4>
-                        <p class="text-gray-600">Author: Jackson J. Spielvogel</p>
-                        <p class="text-gray-600">World history for JHS learners.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read History for JHS">Read Now</a>
-                    </div>
-                </div>
-                <!-- JHS Quiz -->
-                <div class="mt-6 bg-white p-6 rounded-lg shadow-md" aria-labelledby="jhs-quiz-heading">
-                    <h4 id="jhs-quiz-heading" class="text-xl font-semibold mb-4">JHS Quiz</h4>
-                    <div class="space-y-4">
-                        <div>
-                            <p class="font-medium">1. What is the chemical symbol for water?</p>
-                            <label><input type="radio" name="jhs-q1" value="a"> a) H₂O</label><br>
-                            <label><input type="radio" name="jhs-q1" value="b"> b) CO₂</label><br>
-                            <label><input type="radio" name="jhs-q1" value="c"> c) O₂</label>
-                            <p class="text-green-600 hidden" id="jhs-q1-feedback">Correct! The answer is a) H₂O.</p>
-                            <p class="text-red-600 hidden" id="jhs-q1-error">Incorrect. The correct answer is a) H₂O.</p>
-                        </div>
-                        <button class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700" onclick="checkAnswer('jhs-q1', 'a', 'jhs-q1-feedback', 'jhs-q1-error')">Submit Answer</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Primary Books Section -->
-            <section id="primary" class="mb-12" aria-labelledby="primary-heading">
-                <h3 id="primary-heading" class="text-2xl font-bold text-gray-800 mb-4">Primary Books</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">Basic English for Kids</h4>
-                        <p class="text-gray-600">Author: Jane Smith</p>
-                        <p class="text-gray-600">Engaging English lessons for primary students.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Basic English for Kids">Read Now</a>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">Math Made Easy</h4>
-                        <p class="text-gray-600">Author: Mary Johnson</p>
-                        <p class="text-gray-600">Simple math for young learners.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Math Made Easy">Read Now</a>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold">Science for Young Minds</h4>
-                        <p class="text-gray-600">Author: David Brown</p>
-                        <p class="text-gray-600">Science for primary school children.</p>
-                        <a href="#" class="text-blue-600 hover:underline" aria-label="Read Science for Young Minds">Read Now</a>
-                    </div>
-                </div>
-                <!-- Primary Quiz -->
-                <div class="mt-6 bg-white p-6 rounded-lg shadow-md" aria-labelledby="primary-quiz-heading">
-                    <h4 id="primary-quiz-heading" class="text-xl font-semibold mb-4">Primary Quiz</h4>
-                    <div class="space-y-4">
-                        <div>
-                            <p class="font-medium">1. What is 2 + 3?</p>
-                            <label><input type="radio" name="primary-q1" value="a"> a) 5</label><br>
-                            <label><input type="radio" name="primary-q1" value="b"> b) 6</label><br>
-                            <label><input type="radio" name="primary-q1" value="c"> c) 4</label>
-                            <p class="text-green-600 hidden" id="primary-q1-feedback">Correct! The answer is a) 5.</p>
-                            <p class="text-red-600 hidden" id="primary-q1-error">Incorrect. The correct answer is a) 5.</p>
-                        </div>
-                        <button class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700" onclick="checkAnswer('primary-q1', 'a', 'primary-q1-feedback', 'primary-q1-error')">Submit Answer</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- AI Chatbot Section -->
-            <section id="chatbot" class="mb-12" aria-labelledby="chatbot-heading">
-                <h3 id="chatbot-heading" class="text-2xl font-bold text-gray-800 mb-4">Ask Our AI Assistant</h3>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div id="chat-output" class="h-64 overflow-y-auto border p-4 mb-4" aria-live="polite"></div>
-                    <div class="flex space-x-2">
-                        <input type="text" id="chat-input" class="flex-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-600" placeholder="Ask a question about any book or subject..." aria-label="Ask a question">
-                        <button id="chat-submit" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700" aria-label="Submit question">Send</button>
-                    </div>
-                </div>
-            </section>
+        <div class="user-controls">
+          <button id="theme-toggle">🌙</button>
+          <button>👤</button>
         </div>
+      </header>
 
-        <!-- Footer -->
-        <footer class="bg-blue-600 text-white p-4 text-center" role="contentinfo">
-            <p>© 2025 Online Library. All rights reserved.</p>
-        </footer>
+      <!-- Main -->
+      <main>
+        <div class="filters">
+          <select id="category-filter">
+            <option value="all">All Categories</option>
+            <option value="fiction">Fiction</option>
+            <option value="non-fiction">Non-Fiction</option>
+            <option value="sci-fi">Sci-Fi</option>
+            <option value="romance">Romance</option>
+          </select>
+        </div>
+        <div class="book-grid" id="book-grid">
+          <!-- Books will be populated by JavaScript -->
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer>
+        <p>Powered by <a href="https://x.ai">xAI</a> | <a href="#">Terms</a> | <a href="#">Privacy</a></p>
+      </footer>
     </div>
+  </div>
 
-    <script>
-        // Login Functionality
-        document.getElementById('login-btn').addEventListener('click', () => {
-            const name = document.getElementById('name').value.trim();
-            const educationLevel = document.getElementById('education-level').value;
-            if (name && educationLevel) {
-                document.getElementById('user-name').textContent = name;
-                document.getElementById('login-page').classList.add('hidden');
-                document.getElementById('library-page').classList.remove('hidden');
-            } else {
-                alert('Please enter your name and select your education level.');
-            }
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <span class="close" id="modal-close">&times;</span>
+      <img id="modal-cover" src="" alt="">
+      <h2 id="modal-title"></h2>
+      <p id="modal-author"></p>
+      <p id="modal-rating"></p>
+      <p id="modal-description"></p>
+      <button>Read Now</button>
+      <button>Add to Library</button>
+    </div>
+  </div>
+
+  <script>
+    // Sample book data (simulating thousands of books)
+    const books = [
+      { id: 1, title: "Dune", author: "Frank Herbert", cover: "https://via.placeholder.com/200x300?text=Dune", rating: 4.5, category: "sci-fi", description: "A sci-fi epic set on the desert planet Arrakis." },
+      { id: 2, title: "1984", author: "George Orwell", cover: "https://via.placeholder.com/200x300?text=1984", rating: 4.8, category: "fiction", description: "A dystopian novel about totalitarianism." },
+      { id: 3, title: "Pride and Prejudice", author: "Jane Austen", cover: "https://via.placeholder.com/200x300?text=Pride+and+Prejudice", rating: 4.2, category: "romance", description: "A classic romance novel." },
+      { id: 4, title: "The Hobbit", author: "J.R.R. Tolkien", cover: "https://via.placeholder.com/200x300?text=The+Hobbit", rating: 4.7, category: "fiction", description: "A fantasy adventure." },
+      { id: 5, title: "Sapiens", author: "Yuval Noah Harari", cover: "https://via.placeholder.com/200x300?text=Sapiens", rating: 4.6, category: "non-fiction", description: "A history of humankind." },
+      { id: 6, title: "The Great Gatsby", author: "F. Scott Fitzgerald", cover: "https://via.placeholder.com/200x300?text=The+Great+Gatsby", rating: 4.3, category: "fiction", description: "A tale of wealth and tragedy." },
+      // Duplicate to simulate thousands
+      ...Array.from({length: 100}, (_, i) => ({
+        id: i + 7,
+        title: `Book ${i + 7}`,
+        author: `Author ${i + 7}`,
+        cover: `https://via.placeholder.com/200x300?text=Book+${i + 7}`,
+        rating: (Math.random() * 2 + 3).toFixed(1),
+        category: ["fiction", "non-fiction", "sci-fi", "romance"][Math.floor(Math.random() * 4)],
+        description: `Description for Book ${i + 7}.`
+      }))
+    ];
+
+    // DOM Elements
+    const bookGrid = document.getElementById("book-grid");
+    const searchInput = document.getElementById("search");
+    const categoryFilter = document.getElementById("category-filter");
+    const sidebar = document.getElementById("sidebar");
+    const hamburger = document.getElementById("hamburger");
+    const themeToggle = document.getElementById("theme-toggle");
+    const modal = document.getElementById("modal");
+    const modalClose = document.getElementById("modal-close");
+    const modalCover = document.getElementById("modal-cover");
+    const modalTitle = document.getElementById("modal-title");
+    const modalAuthor = document.getElementById("modal-author");
+    const modalRating = document.getElementById("modal-rating");
+    const modalDescription = document.getElementById("modal-description");
+
+    // State
+    let favorites = new Set();
+
+    // Render Books
+    function renderBooks(filter = { search: "", category: "all" }) {
+      bookGrid.innerHTML = "";
+      const filteredBooks = books.filter(book => {
+        const matchesSearch = book.title.toLowerCase().includes(filter.search.toLowerCase()) ||
+                              book.author.toLowerCase().includes(filter.search.toLowerCase());
+        const matchesCategory = filter.category === "all" || book.category === filter.category;
+        return matchesSearch && matchesCategory;
+      });
+      filteredBooks.forEach(book => {
+        const card = document.createElement("div");
+        card.className = `book-card ${document.body.classList.contains("dark") ? "dark" : ""}`;
+        card.innerHTML = `
+          <img src="https://via.placeholder.com/200x300?text=Loading" data-src="${book.cover}" alt="${book.title}" loading="lazy">
+          <div class="info">
+            <h3>${book.title}</h3>
+            <p class="${document.body.classList.contains("dark") ? "dark" : ""}">${book.author}</p>
+            <div class="rating">${"★".repeat(Math.floor(book.rating))}${"☆".repeat(5 - Math.floor(book.rating))}</div>
+            <button class="favorite ${favorites.has(book.id) ? "active" : ""}" data-id="${book.id}">♥</button>
+          </div>
+        `;
+        card.addEventListener("click", () => openModal(book));
+        bookGrid.appendChild(card);
+      });
+      // Lazy load images
+      const images = bookGrid.querySelectorAll("img[loading='lazy']");
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            observer.unobserve(img);
+          }
         });
+      });
+      images.forEach(img => observer.observe(img));
+    }
 
-        // Quiz Answer Checking
-        function checkAnswer(questionName, correctAnswer, feedbackId, errorId) {
-            const selected = document.querySelector(`input[name="${questionName}"]:checked`);
-            const feedback = document.getElementById(feedbackId);
-            const error = document.getElementById(errorId);
-            if (selected) {
-                feedback.classList.add('hidden');
-                error.classList.add('hidden');
-                if (selected.value === correctAnswer) {
-                    feedback.classList.remove('hidden');
-                } else {
-                    error.classList.remove('hidden');
-                }
-            } else {
-                alert('Please select an answer.');
-            }
+    // Open Modal
+    function openModal(book) {
+      modalCover.src = book.cover;
+      modalCover.alt = book.title;
+      modalTitle.textContent = book.title;
+      modalAuthor.textContent = `By ${book.author}`;
+      modalRating.textContent = `Rating: ${book.rating} ★`;
+      modalDescription.textContent = book.description;
+      modal.classList.add("active");
+    }
+
+    // Close Modal
+    modalClose.addEventListener("click", () => modal.classList.remove("active"));
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.classList.remove("active");
+    });
+
+    // Toggle Sidebar
+    hamburger.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+    });
+
+    // Toggle Dark Mode
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+      document.querySelectorAll(".book-card, .modal-content, header, footer, .filters select, .search-bar input, .modal-content .close, .book-card p")
+        .forEach(el => el.classList.toggle("dark"));
+    });
+
+    // Search and Filter
+    searchInput.addEventListener("input", () => {
+      renderBooks({ search: searchInput.value, category: categoryFilter.value });
+    });
+    categoryFilter.addEventListener("change", () => {
+      renderBooks({ search: searchInput.value, category: categoryFilter.value });
+    });
+
+    // Favorite Toggle
+    bookGrid.addEventListener("click", (e) => {
+      if (e.target.classList.contains("favorite")) {
+        const id = parseInt(e.target.dataset.id);
+        if (favorites.has(id)) {
+          favorites.delete(id);
+          e.target.classList.remove("active");
+        } else {
+          favorites.add(id);
+          e.target.classList.add("active");
         }
+        e.stopPropagation();
+      }
+    });
 
-        // AI Chatbot Simulation
-        const chatInput = document.getElementById('chat-input');
-        const chatOutput = document.getElementById('chat-output');
-        const chatSubmit = document.getElementById('chat-submit');
-
-        const responses = {
-            'nursing': 'Nursing involves patient care, administering medications, and collaborating with healthcare teams. Want to know more about a specific nursing topic?',
-            'calculus': 'Calculus is about change and motion, focusing on derivatives and integrals. Ask me about a specific calculus concept!',
-            'physics': 'Physics covers motion, energy, and forces. Want help with a physics question?',
-            'english': 'English literature includes novels, poems, and plays. Ask about a specific book or author!',
-            'math': 'Math includes topics like algebra and geometry. What math concept do you need help with?',
-            'science': 'Science explores the natural world, including biology, chemistry, and physics. Ask a specific science question!',
-            'history': 'History covers past events and civilizations. Want to know about a specific historical period?',
-            'default': 'I can help with nursing, SHS, JHS, or primary subjects. Please ask a specific question or mention a topic!'
-        };
-
-        chatSubmit.addEventListener('click', () => {
-            const question = chatInput.value.trim().toLowerCase();
-            if (question) {
-                const userMessage = document.createElement('p');
-                userMessage.innerHTML = `<strong>You:</strong> ${question}`;
-                chatOutput.appendChild(userMessage);
-
-                let response = responses['default'];
-                for (const key in responses) {
-                    if (question.includes(key)) {
-                        response = responses[key];
-                        break;
-                    }
-                }
-
-                const aiMessage = document.createElement('p');
-                aiMessage.innerHTML = `<strong>AI Assistant:</strong> ${response}`;
-                chatOutput.appendChild(aiMessage);
-
-                chatOutput.scrollTop = chatOutput.scrollHeight;
-                chatInput.value = '';
-            }
-        });
-
-        // Allow Enter key to submit chat
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                chatSubmit.click();
-            }
-        });
-    </script>
+    // Initialize
+    renderBooks();
+  </script>
 </body>
-                          </html>
+</html>
