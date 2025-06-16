@@ -42,495 +42,138 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Online Library</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    body {
-      background: #f5f5f5;
-      color: #333;
-      transition: background 0.3s, color 0.3s;
-    }
-    body.dark {
-      background: #121212;
-      color: #e0e0e0;
-    }
-    .container {
-      display: flex;
-      min-height: 100vh;
-    }
-    /* Sidebar */
-    .sidebar {
-      width: 250px;
-      background: #2c2f33;
-      color: #e0e0e0;
-      padding: 20px;
-      position: fixed;
-      height: 100%;
-      transition: transform 0.3s ease-in-out;
-      z-index: 1000;
-    }
-    .sidebar.hidden {
-      transform: translateX(-100%);
-    }
-    .sidebar ul {
-      list-style: none;
-    }
-    .sidebar li {
-      margin: 10px 0;
-    }
-    .sidebar a {
-      color: #e0e0e0;
-      text-decoration: none;
-      display: block;
-      padding: 10px;
-      border-radius: 8px;
-      transition: background 0.3s;
-    }
-    .sidebar a:hover, .sidebar a.active {
-      background: #1e90ff;
-    }
-    /* Header */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 30px;
-      background: #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 999;
-    }
-    header.dark {
-      background: #1e1e1e;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    }
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-    }
-    .search-bar {
-      flex: 1;
-      max-width: 400px;
-      margin: 0 20px;
-    }
-    .search-bar input {
-      width: 100%;
-      padding: 10px 15px;
-      border-radius: 20px;
-      border: 1px solid #ddd;
-      background: #f9f9f9;
-      color: #333;
-    }
-    .search-bar input.dark {
-      border: 1px solid #444;
-      background: #2c2f33;
-      color: #e0e0e0;
-    }
-    .user-controls button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 20px;
-      margin-left: 15px;
-    }
-    .hamburger {
-      display: none;
-      font-size: 24px;
-      cursor: pointer;
-    }
-    /* Main Content */
-    main {
-      flex: 1;
-      padding: 30px;
-      margin-left: 250px;
-    }
-    .filters {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .filters select {
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      background: #fff;
-      color: #333;
-    }
-    .filters select.dark {
-      background: #2c2f33;
-      border: 1px solid #444;
-      color: #e0e0e0;
-    }
-    .book-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 20px;
-    }
-    .book-card {
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      transition: transform 0.3s ease-in-out;
-      position: relative;
-    }
-    .book-card.dark {
-      background: #1e1e1e;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    }
-    .book-card:hover {
-      transform: scale(1.05);
-    }
-    .book-card img {
-      width: 100%;
-      height: 270px;
-      object-fit: cover;
-      display: block;
-    }
-    .book-card .info {
-      padding: 10px;
-    }
-    .book-card h3 {
-      font-size: 16px;
-      font-weight: bold;
-      margin-bottom: 5px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .book-card p {
-      font-size: 14px;
-      color: #666;
-      font-style: italic;
-    }
-    .book-card p.dark {
-      color: #aaa;
-    }
-    .book-card .rating {
-      font-size: 14px;
-      color: #f5c518;
-      margin-top: 5px;
-    }
-    .book-card .favorite {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #ccc;
-    }
-    .book-card .favorite.active {
-      color: #ff4d4f;
-    }
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-      z-index: 1001;
-    }
-    .modal.active {
-      display: flex;
-    }
-    .modal-content {
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px;
-      max-width: 500px;
-      width: 90%;
-      position: relative;
-    }
-    .modal-content.dark {
-      background: #1e1e1e;
-    }
-    .modal-content img {
-      width: 100%;
-      max-height: 300px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 15px;
-    }
-    .modal-content h2 {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-    .modal-content p {
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-    .modal-content .close {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 24px;
-      cursor: pointer;
-      color: #333;
-    }
-    .modal-content .close.dark {
-      color: #e0e0e0;
-    }
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 15px;
-      background: #fff;
-      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
-    }
-    footer.dark {
-      background: #1e1e1e;
-      box-shadow: 0 -2px 4px rgba(0,0,0,0.5);
-    }
-    footer a {
-      color: #1e90ff;
-      text-decoration: none;
-    }
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-      }
-      .sidebar.active {
-        transform: translateX(0);
-      }
-      main {
-        margin-left: 0;
-      }
-      .hamburger {
-        display: block;
-      }
-      .book-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      }
-    }
-    @media (max-width: 480px) {
-      .book-grid {
-        grid-template-columns: 1fr;
-      }
-      .search-bar {
-        margin: 0 10px;
-      }
-    }
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #1e90ff;
-      border-radius: 4px;
-    }
-  </style>
+  <title>Salifu APK App</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-  <div class="container">
-    <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
-      <ul>
-        <li><a href="#" class="active">Categories</a></li>
-        <li><a href="#">Search</a></li>
-        <li><a href="#">Favorites</a></li>
-        <li><a href="#">My Library</a></li>
-        <li><a href="#">Settings</a></li>
-      </ul>
-    </nav>
-
-    <!-- Main Content -->
-    <div style="flex: 1; display: flex; flex-direction: column;">
-      <!-- Header -->
-      <header>
-        <span class="hamburger" id="hamburger">☰</span>
-        <div class="logo">Online Library</div>
-        <div class="search-bar">
-          <input type="text" id="search" placeholder="Search books...">
-        </div>
-        <div class="user-controls">
-          <button id="theme-toggle">🌙</button>
-          <button>👤</button>
-        </div>
-      </header>
-
-      <!-- Main -->
-      <main>
-        <div class="filters">
-          <select id="category-filter">
-            <option value="all">All Categories</option>
-            <option value="fiction">Fiction</option>
-            <option value="non-fiction">Non-Fiction</option>
-            <option value="sci-fi">Sci-Fi</option>
-            <option value="romance">Romance</option>
-          </select>
-        </div>
-        <div class="book-grid" id="book-grid">
-          <!-- Books will be populated by JavaScript -->
-        </div>
-      </main>
-
-      <!-- Footer -->
-      <footer>
-        <p>Powered by <a href="https://x.ai">xAI</a> | <a href="#">Terms</a> | <a href="#">Privacy</a></p>
-      </footer>
-    </div>
-  </div>
-
-  <!-- Modal -->
-  <div class="modal" id="modal">
-    <div class="modal-content">
-      <span class="close" id="modal-close">&times;</span>
-      <img id="modal-cover" src="" alt="">
-      <h2 id="modal-title"></h2>
-      <p id="modal-author"></p>
-      <p id="modal-rating"></p>
-      <p id="modal-description"></p>
-      <button>Read Now</button>
-      <button>Add to Library</button>
-    </div>
-  </div>
-
-  <script>
-    // Sample book data (simulating thousands of books)
-    const books = [
-      { id: 1, title: "Dune", author: "Frank Herbert", cover: "https://via.placeholder.com/200x300?text=Dune", rating: 4.5, category: "sci-fi", description: "A sci-fi epic set on the desert planet Arrakis." },
-      { id: 2, title: "1984", author: "George Orwell", cover: "https://via.placeholder.com/200x300?text=1984", rating: 4.8, category: "fiction", description: "A dystopian novel about totalitarianism." },
-      { id: 3, title: "Pride and Prejudice", author: "Jane Austen", cover: "https://via.placeholder.com/200x300?text=Pride+and+Prejudice", rating: 4.2, category: "romance", description: "A classic romance novel." },
-      { id: 4, title: "The Hobbit", author: "J.R.R. Tolkien", cover: "https://via.placeholder.com/200x300?text=The+Hobbit", rating: 4.7, category: "fiction", description: "A fantasy adventure." },
-      { id: 5, title: "Sapiens", author: "Yuval Noah Harari", cover: "https://via.placeholder.com/200x300?text=Sapiens", rating: 4.6, category: "non-fiction", description: "A history of humankind." },
-      { id: 6, title: "The Great Gatsby", author: "F. Scott Fitzgerald", cover: "https://via.placeholder.com/200x300?text=The+Great+Gatsby", rating: 4.3, category: "fiction", description: "A tale of wealth and tragedy." },
-      // Duplicate to simulate thousands
-      ...Array.from({length: 100}, (_, i) => ({
-        id: i + 7,
-        title: `Book ${i + 7}`,
-        author: `Author ${i + 7}`,
-        cover: `https://via.placeholder.com/200x300?text=Book+${i + 7}`,
-        rating: (Math.random() * 2 + 3).toFixed(1),
-        category: ["fiction", "non-fiction", "sci-fi", "romance"][Math.floor(Math.random() * 4)],
-        description: `Description for Book ${i + 7}.`
-      }))
+  <div id="root"></div>
+  <script type="text/babel">
+    const stories = [
+      {
+        id: 1,
+        title: "The Brave Little Rabbit",
+        cover: "https://via.placeholder.com/150/FF6347/FFFFFF?text=Rabbit",
+        pages: [
+          "Once upon a time, in a cozy burrow, lived a brave little rabbit named Ruby.",
+          "One sunny day, Ruby heard a strange noise coming from the forest.",
+          "With courage in her heart, Ruby hopped out to investigate.",
+          "She found a lost baby bird crying for its mother.",
+          "Ruby promised to help and led the bird through the forest.",
+          "After a long journey, they found the bird's nest, and the mother bird sang with joy.",
+          "Ruby returned home, her heart full of pride for her brave adventure."
+        ]
+      },
+      {
+        id: 2,
+        title: "The Magic Star",
+        cover: "https://via.placeholder.com/150/4682B4/FFFFFF?text=Star",
+        pages: [
+          "High above the world, in a sky full of stars, lived a tiny magic star named Stella.",
+          "Stella dreamed of visiting the Earth to spread her light.",
+          "One night, she zoomed down to a quiet village.",
+          "She saw a sad child sitting alone in the dark.",
+          "Stella twinkled brightly, lighting up the child's face with a smile.",
+          "The child made a wish, and Stella granted it with her magic.",
+          "Stella returned to the sky, shining brighter than ever before."
+        ]
+      }
     ];
 
-    // DOM Elements
-    const bookGrid = document.getElementById("book-grid");
-    const searchInput = document.getElementById("search");
-    const categoryFilter = document.getElementById("category-filter");
-    const sidebar = document.getElementById("sidebar");
-    const hamburger = document.getElementById("hamburger");
-    const themeToggle = document.getElementById("theme-toggle");
-    const modal = document.getElementById("modal");
-    const modalClose = document.getElementById("modal-close");
-    const modalCover = document.getElementById("modal-cover");
-    const modalTitle = document.getElementById("modal-title");
-    const modalAuthor = document.getElementById("modal-author");
-    const modalRating = document.getElementById("modal-rating");
-    const modalDescription = document.getElementById("modal-description");
+    function App() {
+      const [selectedStory, setSelectedStory] = React.useState(null);
+      const [currentPage, setCurrentPage] = React.useState(0);
 
-    // State
-    let favorites = new Set();
+      const handleSelectStory = (story) => {
+        setSelectedStory(story);
+        setCurrentPage(0);
+      };
 
-    // Render Books
-    function renderBooks(filter = { search: "", category: "all" }) {
-      bookGrid.innerHTML = "";
-      const filteredBooks = books.filter(book => {
-        const matchesSearch = book.title.toLowerCase().includes(filter.search.toLowerCase()) ||
-                              book.author.toLowerCase().includes(filter.search.toLowerCase());
-        const matchesCategory = filter.category === "all" || book.category === filter.category;
-        return matchesSearch && matchesCategory;
-      });
-      filteredBooks.forEach(book => {
-        const card = document.createElement("div");
-        card.className = `book-card ${document.body.classList.contains("dark") ? "dark" : ""}`;
-        card.innerHTML = `
-          <img src="https://via.placeholder.com/200x300?text=Loading" data-src="${book.cover}" alt="${book.title}" loading="lazy">
-          <div class="info">
-            <h3>${book.title}</h3>
-            <p class="${document.body.classList.contains("dark") ? "dark" : ""}">${book.author}</p>
-            <div class="rating">${"★".repeat(Math.floor(book.rating))}${"☆".repeat(5 - Math.floor(book.rating))}</div>
-            <button class="favorite ${favorites.has(book.id) ? "active" : ""}" data-id="${book.id}">♥</button>
-          </div>
-        `;
-        card.addEventListener("click", () => openModal(book));
-        bookGrid.appendChild(card);
-      });
-      // Lazy load images
-      const images = bookGrid.querySelectorAll("img[loading='lazy']");
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const img = entry.target;
-            img.src = img.dataset.src;
-            observer.unobserve(img);
-          }
-        });
-      });
-      images.forEach(img => observer.observe(img));
-    }
-
-    // Open Modal
-    function openModal(book) {
-      modalCover.src = book.cover;
-      modalCover.alt = book.title;
-      modalTitle.textContent = book.title;
-      modalAuthor.textContent = `By ${book.author}`;
-      modalRating.textContent = `Rating: ${book.rating} ★`;
-      modalDescription.textContent = book.description;
-      modal.classList.add("active");
-    }
-
-    // Close Modal
-    modalClose.addEventListener("click", () => modal.classList.remove("active"));
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) modal.classList.remove("active");
-    });
-
-    // Toggle Sidebar
-    hamburger.addEventListener("click", () => {
-      sidebar.classList.toggle("active");
-    });
-
-    // Toggle Dark Mode
-    themeToggle.addEventListener("click", () => {
-      document.body.classList.toggle("dark");
-      themeToggle.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
-      document.querySelectorAll(".book-card, .modal-content, header, footer, .filters select, .search-bar input, .modal-content .close, .book-card p")
-        .forEach(el => el.classList.toggle("dark"));
-    });
-
-    // Search and Filter
-    searchInput.addEventListener("input", () => {
-      renderBooks({ search: searchInput.value, category: categoryFilter.value });
-    });
-    categoryFilter.addEventListener("change", () => {
-      renderBooks({ search: searchInput.value, category: categoryFilter.value });
-    });
-
-    // Favorite Toggle
-    bookGrid.addEventListener("click", (e) => {
-      if (e.target.classList.contains("favorite")) {
-        const id = parseInt(e.target.dataset.id);
-        if (favorites.has(id)) {
-          favorites.delete(id);
-          e.target.classList.remove("active");
-        } else {
-          favorites.add(id);
-          e.target.classList.add("active");
+      const handleNextPage = () => {
+        if (currentPage < selectedStory.pages.length - 1) {
+          setCurrentPage(currentPage + 1);
         }
-        e.stopPropagation();
-      }
-    });
+      };
 
-    // Initialize
-    renderBooks();
+      const handlePrevPage = () => {
+        if (currentPage > 0) {
+          setCurrentPage(currentPage - 1);
+        }
+      };
+
+      const handleBackToList = () => {
+        setSelectedStory(null);
+        setCurrentPage(0);
+      };
+
+      return (
+        <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
+          <h1 className="text-4xl font-bold text-indigo-600 mb-8">Storybook Adventure</h1>
+          {!selectedStory ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {stories.map((story) => (
+                <div
+                  key={story.id}
+                  className="bg-white rounded-lg shadow-lg p-4 cursor-pointer hover:shadow-xl transition-shadow"
+                  onClick={() => handleSelectStory(story)}
+                >
+                  <img
+                    src={story.cover}
+                    alt={story.title}
+                    className="w-full h-40 object-cover rounded-md mb-4"
+                  />
+                  <h2 className="text-xl font-semibold text-gray-800">{story.title}</h2>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">{selectedStory.title}</h2>
+              <div className="bg-gray-50 p-4 rounded-md min-h-[300px] flex items-center justify-center">
+                <p className="text-lg text-gray-700">{selectedStory.pages[currentPage]}</p>
+              </div>
+              <div className="flex justify-between items-center mt-6">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 0}
+                  className={`px-4 py-2 rounded-md ${
+                    currentPage === 0
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  }`}
+                >
+                  Previous
+                </button>
+                <span className="text-gray-600">
+                  Page {currentPage + 1} of {selectedStory.pages.length}
+                </span>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === selectedStory.pages.length - 1}
+                  className={`px-4 py-2 rounded-md ${
+                    currentPage === selectedStory.pages.length - 1
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+              <button
+                onClick={handleBackToList}
+                className="mt-4 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+              >
+                Back to Stories
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById("root"));
   </script>
 </body>
 </html>
